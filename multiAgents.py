@@ -149,13 +149,13 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
         # return self.maxValue(gameState, 0)[1]
 
-    def minValueForTierOfGhosts(self, state, depth, action):
-        minValue = float("inf")
-        for ghost in range(1, state.getNumAgents()):
-            ghostMinValue = self.minValue(
-                state.generateSuccessor(0, action), depth, ghost)
-            if ghostMinValue < minValue:
-                minValue = ghostMinValue
+    # def minValueForTierOfGhosts(self, state, depth, action):
+    #    minValue = float("inf")
+    #    for ghost in range(1, state.getNumAgents()):
+    #        ghostMinValue = self.minValue(
+    #            state.generateSuccessor(0, action), depth, ghost)
+    #        if ghostMinValue < minValue:
+    #            minValue = ghostMinValue
 
         return minValue
 
@@ -163,10 +163,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
         maxValue = float("-inf")
         maxAction = None
         for action in state.getLegalActions(0):
-            minValueForTierOfGhosts = self.minValueForTierOfGhosts(
-                state, 1, action)
-            if minValueForTierOfGhosts > maxValue:
-                maxValue = minValueForTierOfGhosts
+            minValueForNext = self.minValue(
+                state.generateSuccessor(0, action), 1, 1)
+            if minValueForNext > maxValue:
+                maxValue = minValueForNext
                 maxAction = action
         return maxAction
 
@@ -174,24 +174,33 @@ class MinimaxAgent(MultiAgentSearchAgent):
         if depth == self.depth or state.isWin() or state.isLose():
             return scoreEvaluationFunction(state)
         maxValue = float("-inf")
-        maxAction = None
         for action in state.getLegalActions(0):
-            minValueForTierOfGhosts = self.minValueForTierOfGhosts(
-                state, depth + 1, action)
-            if minValueForTierOfGhosts > maxValue:
-                maxValue = minValueForTierOfGhosts
+            minValueForNext = self.minValue(
+                state.generateSuccessor(0, action), depth + 1, 1)
+            if minValueForNext > maxValue:
+                maxValue = minValueForNext
         return maxValue
 
     def minValue(self, state, depth, ghost):
         if state.isWin() or state.isLose():
             return scoreEvaluationFunction(state)
+
         minValue = float("inf")
         minAction = None
-        for action in state.getLegalActions(ghost):
-            maxValueForAction = self.maxValue(
-                state.generateSuccessor(ghost, action), depth)
-            if maxValueForAction < minValue:
-                minValue = maxValueForAction
+
+        if ghost == state.getNumAgents() - 1:
+            for action in state.getLegalActions(ghost):
+                minValueForNext = self.maxValue(
+                    state.generateSuccessor(ghost, action), depth)
+                if minValueForNext < minValue:
+                    minValue = minValueForNext
+        else:
+            for action in state.getLegalActions(ghost):
+                minValueForNext = self.minValue(
+                    state.generateSuccessor(ghost, action), depth, ghost + 1)
+                if minValueForNext < minValue:
+                    minValue = minValueForNext
+
         return minValue
 
 
