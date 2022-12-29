@@ -145,24 +145,19 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
 
+        # Returns the minimax action from the current gameState using self.depth
         return self.minimaxDecision(gameState)
 
-        # return self.maxValue(gameState, 0)[1]
-
-    # def minValueForTierOfGhosts(self, state, depth, action):
-    #    minValue = float("inf")
-    #    for ghost in range(1, state.getNumAgents()):
-    #        ghostMinValue = self.minValue(
-    #            state.generateSuccessor(0, action), depth, ghost)
-    #        if ghostMinValue < minValue:
-    #            minValue = ghostMinValue
-
-        return minValue
-
+    # Starting at the root of the tree
     def minimaxDecision(self, state):
+
+        # Initialize the best action to be infinitly bad
         maxValue = float("-inf")
         maxAction = None
+
+        #Iterates through all the legal actions of pacman in the current state, and finds the best action, and returns it
         for action in state.getLegalActions(0):
+
             minValueForNext = self.minValue(
                 state.generateSuccessor(0, action), 1, 1)
             if minValueForNext > maxValue:
@@ -170,10 +165,16 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 maxAction = action
         return maxAction
 
+    # Returns the best value for the pacman at this state in this depth (the value of the node)
     def maxValue(self, state, depth):
+        # Checks if the state is a terminal state, if so, returns the score evaluation function of the state
         if depth == self.depth or state.isWin() or state.isLose():
             return scoreEvaluationFunction(state)
+        
+        # Initialize the best action to be infinitly bad
         maxValue = float("-inf")
+
+        #Iterates through all the legal actions of pacman in the current state, and finds the best action, and returns the max score of it (the value of the node)
         for action in state.getLegalActions(0):
             minValueForNext = self.minValue(
                 state.generateSuccessor(0, action), depth + 1, 1)
@@ -181,61 +182,31 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 maxValue = minValueForNext
         return maxValue
 
+    # Returns the best value for the ghost at this state in this depth (the value of the node)
     def minValue(self, state, depth, ghost):
+        # Checks if the state is a terminal state, if so, returns the score evaluation function of the state
         if state.isWin() or state.isLose():
             return scoreEvaluationFunction(state)
-
+        # Initialize the best action to be infinitly bad
         minValue = float("inf")
-        minAction = None
-
+        # If next node is a pacman node
         if ghost == state.getNumAgents() - 1:
+            #Iterates through all the legal actions of the ghost in the current state, and finds the best action, and returns the min score of it (the value of the node)
             for action in state.getLegalActions(ghost):
                 minValueForNext = self.maxValue(
                     state.generateSuccessor(ghost, action), depth)
                 if minValueForNext < minValue:
                     minValue = minValueForNext
+
+        # If next node is a ghost node
         else:
+            #Iterates through all the legal actions of the ghost in the current state, and finds the best action, and returns the min score of it (the value of the node)
             for action in state.getLegalActions(ghost):
                 minValueForNext = self.minValue(
                     state.generateSuccessor(ghost, action), depth, ghost + 1)
                 if minValueForNext < minValue:
                     minValue = minValueForNext
-
         return minValue
-
-
-"""
-    def maxValue(self, gamestate, depth):
-        if depth == self.depth*gamestate.getNumAgents() or gamestate.isWin() or gamestate.isLose():
-            return self.evaluationFunction(gamestate), None
-
-        maxMin = float("-inf")
-        maxAction = None
-        for action in gamestate.getLegalActions(0):
-            min = float("inf")
-            for i in range(gamestate.getNumAgents()):
-                if self.minValue(gamestate.generateSuccessor(0, action), depth + 1, i)[0] < min:
-                    min = self.minValue(gamestate.generateSuccessor(
-                        0, action), depth + 1, i)[0]
-            if min > maxMin:
-                maxMin = min
-                maxAction = action
-        return maxMin, maxAction
-
-    def minValue(self, gamestate, depth, agent):
-        if depth == self.depth*gamestate.getNumAgents() or gamestate.isWin() or gamestate.isLose():
-            return self.evaluationFunction(gamestate), None
-
-        minMax = float("inf")
-        minAction = None
-        for action in gamestate.getLegalActions(agent):
-            if self.maxValue(gamestate.generateSuccessor(agent, action), depth + 1 + gamestate.getNumAgents() - agent)[0] < minMax:
-                minMax = self.maxValue(gamestate.generateSuccessor(
-                    agent, action), depth + 1 + gamestate.getNumAgents() - agent)[0]
-                minAction = action
-        return minMax, minAction
-
-"""
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
@@ -248,7 +219,80 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        # Returns the minimax action from the current gameState using self.depth
+        return self.minimaxDecision(gameState)
+
+    # Starting at the root of the tree
+    def minimaxDecision(self, state):
+
+        # Initialize the best action to be infinitly bad
+        maxValue = float("-inf")
+        maxAction = None
+        alpha = float("-inf")
+        beta = float("inf")
+
+        #Iterates through all the legal actions of pacman in the current state, and finds the best action, and returns it
+        for action in state.getLegalActions(0):
+            minValueForNext = self.minValue(
+                state.generateSuccessor(0, action), 1, 1, alpha, beta)
+            if minValueForNext > maxValue:
+                maxValue = minValueForNext
+                maxAction = action
+            alpha = max(alpha, maxValue)
+        return maxAction
+
+    # Returns the best value for the pacman at this state in this depth (the value of the node)
+    def maxValue(self, state, depth, alpha, beta):
+        # Checks if the state is a terminal state, if so, returns the score evaluation function of the state
+        if depth == self.depth or state.isWin() or state.isLose():
+            return scoreEvaluationFunction(state)
+
+        # Initialize the best action to be infinitly bad
+        maxValue = float("-inf")
+
+        #Iterates through all the legal actions of pacman in the current state, and finds the best action, and returns the max score of it (the value of the node)
+        for action in state.getLegalActions(0):
+            minValueForNext = self.minValue(
+                state.generateSuccessor(0, action), depth + 1, 1, alpha, beta)
+            if minValueForNext > maxValue:
+                maxValue = minValueForNext
+            if maxValue > beta:
+                return maxValue
+            alpha = max(alpha, maxValue)
+        return maxValue
+
+    # Returns the best value for the ghost at this state in this depth (the value of the node)
+    def minValue(self, state, depth, ghost, alpha, beta):
+        # Checks if the state is a terminal state, if so, returns the score evaluation function of the state
+        if state.isWin() or state.isLose():
+            return scoreEvaluationFunction(state)
+        # Initialize the best action to be infinitly bad
+        minValue = float("inf")
+        # If next node is a pacman node
+        if ghost == state.getNumAgents() - 1:
+            #Iterates through all the legal actions of the ghost in the current state, and finds the best action, and returns the min score of it (the value of the node)
+            for action in state.getLegalActions(ghost):
+                minValueForNext = self.maxValue(
+                    state.generateSuccessor(ghost, action), depth, alpha, beta)
+                if minValueForNext < minValue:
+                    minValue = minValueForNext
+                if minValue < alpha:
+                    return minValue
+                beta = min(beta, minValue)
+
+        # If next node is a ghost node
+        else:
+            #Iterates through all the legal actions of the ghost in the current state, and finds the best action, and returns the min score of it (the value of the node)
+            for action in state.getLegalActions(ghost):
+                minValueForNext = self.minValue(
+                    state.generateSuccessor(ghost, action), depth, ghost + 1, alpha, beta)
+                if minValueForNext < minValue:
+                    minValue = minValueForNext
+                if minValue < alpha:
+                    return minValue
+                beta = min(beta, minValue)
+        return minValue
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
